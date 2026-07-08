@@ -67,7 +67,7 @@
 @property(readwrite, nonatomic) AWEURLModel *playURL;
 @property(readonly, nonatomic) AWEURLModel *downloadURL;
 @property(readonly, nonatomic) NSNumber *duration;
-@end
+%end
 
 %hook AWEVideoModel
 - (AWEURLModel *)playURL {
