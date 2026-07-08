@@ -19,7 +19,7 @@
     if (![self.sectionIdentifier isEqualToString:@"account"]) {
         return original;
     }
-    for (id model in original) {
+    for (TTKSettingsBaseCellPlugin *model in original) {
         if ([model.itemModel.identifier isEqualToString:@"doux_settings"]) {
             return original;
         }
