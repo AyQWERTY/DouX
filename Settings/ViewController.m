@@ -13,7 +13,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor systemBackgroundColor];
-    
+
     self.title = @"DouX++ Settings";
     self.staticTable = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
     self.staticTable.translatesAutoresizingMaskIntoConstraints = NO;
@@ -71,7 +71,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     switch (section) {
-        case 0: return 15;
+        case 0: return 16;
         case 1: return 4;
         case 2: return 4;
         case 3: return 10;
@@ -92,17 +92,18 @@
             case 1: return [self createSwitchCellWithTitle:@"Download Button" Detail:@"Enable download button for videos" Key:@"download_button"];
             case 2: return [self createSwitchCellWithTitle:@"Share Sheet" Detail:@"Enable sharing options in share sheet" Key:@"share_sheet"];
             case 3: return [self createSwitchCellWithTitle:@"Remove Watermark" Detail:@"Remove the TikTok watermark from videos" Key:@"remove_watermark"];
-            case 4: return [self createSwitchCellWithTitle:@"Show/Hide UI Button" Detail:@"Show or hide the UI button" Key:@"remove_elements_button"];
-            case 5: return [self createSwitchCellWithTitle:@"Stop Playback" Detail:@"Stop video playback automatically" Key:@"stop_play"];
-            case 6: return [self createSwitchCellWithTitle:@"Auto Play Next Video" Detail:@"Automatically play the next video" Key:@"auto_play"];
-            case 7: return [self createSwitchCellWithTitle:@"Show Progress Bar" Detail:@"Display progress bar on video playback" Key:@"show_porgress_bar"];
-            case 8: return [self createSwitchCellWithTitle:@"Transparent Comments" Detail:@"Make comments transparent" Key:@"transparent_commnet"];
-            case 9: return [self createSwitchCellWithTitle:@"Show Usernames" Detail:@"Display usernames on videos" Key:@"show_username"];
-            case 10: return [self createSwitchCellWithTitle:@"Disable Sensitive Content" Detail:@"Disable sensitive content filter" Key:@"disable_unsensitive"];
-            case 11: return [self createSwitchCellWithTitle:@"Disable Warnings" Detail:@"Disable TikTok warnings" Key:@"disable_warnings"];
-            case 12: return [self createSwitchCellWithTitle:@"Disable Live Streaming" Detail:@"Disable live video streaming" Key:@"disable_live"];
-            case 13: return [self createSwitchCellWithTitle:@"Skip Recommendations" Detail:@"Skip recommended videos" Key:@"skip_recommnedations"];
-            case 14: return [self createSwitchCellWithTitle:@"Upload Region" Detail:@"Show Upload Region Flag Next to Username" Key:@"upload_region"];
+            case 4: return [self createSwitchCellWithTitle:@"Force High Quality" Detail:@"Disable if playback issues occur" Key:@"force_video_quality"];
+            case 5: return [self createSwitchCellWithTitle:@"Show/Hide UI Button" Detail:@"Show or hide the UI button" Key:@"remove_elements_button"];
+            case 6: return [self createSwitchCellWithTitle:@"Stop Playback" Detail:@"Stop video playback automatically" Key:@"stop_play"];
+            case 7: return [self createSwitchCellWithTitle:@"Auto Play Next Video" Detail:@"Automatically play the next video" Key:@"auto_play"];
+            case 8: return [self createSwitchCellWithTitle:@"Show Progress Bar" Detail:@"Display progress bar on video playback" Key:@"show_porgress_bar"];
+            case 9: return [self createSwitchCellWithTitle:@"Transparent Comments" Detail:@"Make comments transparent" Key:@"transparent_commnet"];
+            case 10: return [self createSwitchCellWithTitle:@"Show Usernames" Detail:@"Display usernames on videos" Key:@"show_username"];
+            case 11: return [self createSwitchCellWithTitle:@"Disable Sensitive Content" Detail:@"Disable sensitive content filter" Key:@"disable_unsensitive"];
+            case 12: return [self createSwitchCellWithTitle:@"Disable Warnings" Detail:@"Disable TikTok warnings" Key:@"disable_warnings"];
+            case 13: return [self createSwitchCellWithTitle:@"Disable Live Streaming" Detail:@"Disable live video streaming" Key:@"disable_live"];
+            case 14: return [self createSwitchCellWithTitle:@"Skip Recommendations" Detail:@"Skip recommended videos" Key:@"skip_recommnedations"];
+            case 15: return [self createSwitchCellWithTitle:@"Upload Region" Detail:@"Show Upload Region Flag Next to Username" Key:@"upload_region"];
         }
     } else if (indexPath.section == 1) {
         switch (indexPath.row) {
@@ -249,7 +250,7 @@
     titleLabel.font = [UIFont systemFontOfSize:16];
     titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     [cell.contentView addSubview:titleLabel];
-    
+
     UITextField *textField = [[UITextField alloc] init];
     textField.placeholder = [NSString stringWithFormat:@"Enter %@", title];
     textField.borderStyle = UITextBorderStyleRoundedRect;
@@ -258,24 +259,24 @@
     textField.returnKeyType = UIReturnKeyDone;
     textField.translatesAutoresizingMaskIntoConstraints = NO;
     [cell.contentView addSubview:textField];
-    
+
     [NSLayoutConstraint activateConstraints:@[
         [titleLabel.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor constant:15],
         [titleLabel.centerYAnchor constraintEqualToAnchor:cell.contentView.centerYAnchor],
         [titleLabel.widthAnchor constraintEqualToConstant:120],
-        
+
         [textField.leadingAnchor constraintEqualToAnchor:titleLabel.trailingAnchor constant:10],
         [textField.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor constant:-15],
         [textField.centerYAnchor constraintEqualToAnchor:cell.contentView.centerYAnchor],
         [textField.heightAnchor constraintEqualToConstant:30]
     ]];
-    
+
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSString *savedText = [defaults stringForKey:key];
     if (savedText) {
         textField.text = savedText;
     }
-    
+
     return cell;
 }
 

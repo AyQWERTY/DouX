@@ -63,6 +63,15 @@
 }
 %end
 
+%hook AWEVideoModel
+- (AWEURLModel *)playURL {
+    if ([DouXManager forceVideoQuality]) {
+        return self.downloadURL;
+    }
+    return %orig;
+}
+%end
+
 %hook AWEPlayInteractionWarningElementView
 - (id)warningImage {
     if ([DouXManager disableWarnings]) {

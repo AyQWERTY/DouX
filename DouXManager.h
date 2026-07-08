@@ -43,6 +43,7 @@
 + (BOOL)appLock;
 + (BOOL)flexEnabled;
 + (BOOL)showVaultButton;
++ (BOOL)forceVideoQuality;
 + (void)showSaveVC:(NSArray<NSURL *> *)item;
 + (void)cleanCache;
 + (BOOL)isEmpty:(NSURL *)url;
