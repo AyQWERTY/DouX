@@ -65,6 +65,13 @@
 
 %hook AWEVideoModel
 - (AWEURLModel *)playURL {
+    NSURL *play = [self.playURL bestURLtoDownload];
+    NSURL *dl = [self.downloadURL bestURLtoDownload];
+    if (play && dl) {
+        os_log_info(doux_log, "playURL: %@", play.absoluteString);
+        os_log_info(doux_log, "dlURL:  %@", dl.absoluteString);
+        os_log_info(doux_log, "same: %d", [play.absoluteString isEqualToString:dl.absoluteString]);
+    }
     if ([DouXManager forceVideoQuality]) {
         return self.downloadURL;
     }
