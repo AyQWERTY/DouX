@@ -275,7 +275,7 @@
 %end
 
 
-@interface AWEFeedViewTemplateCell (_FetchAndDownloadHDVideo:);
+@interface AWEFeedViewTemplateCell (HDVideoDownload);
 
 %hook AWEFeedViewTemplateCell
 %property (nonatomic, strong) JGProgressHUD *hud;
@@ -861,7 +861,7 @@
 }
 %end
 
-@interface AWEAwemeDetailTableViewCell (_FetchAndDownloadHDVideo:);
+@interface AWEAwemeDetailTableViewCell (HDVideoDownload);
 
 %hook AWEAwemeDetailTableViewCell
 %property (nonatomic, strong) JGProgressHUD *hud;
