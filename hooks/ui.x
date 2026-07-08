@@ -275,6 +275,10 @@
 %end
 
 
+@interface AWEFeedViewTemplateCell (HDVideoDownload)
+- (void)_fetchAndDownloadHDVideo:(NSDictionary *)info;
+@end
+
 %hook AWEFeedViewTemplateCell
 %property (nonatomic, strong) JGProgressHUD *hud;
 %property(nonatomic, assign) BOOL elementsHidden;
@@ -858,6 +862,10 @@
     }
 }
 %end
+
+@interface AWEAwemeDetailTableViewCell (HDVideoDownload)
+- (void)_fetchAndDownloadHDVideo:(NSDictionary *)info;
+@end
 
 %hook AWEAwemeDetailTableViewCell
 %property (nonatomic, strong) JGProgressHUD *hud;
