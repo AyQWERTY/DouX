@@ -275,8 +275,6 @@
 %end
 
 
-@interface AWEFeedViewTemplateCell (HDVideoDownload);
-
 %hook AWEFeedViewTemplateCell
 %property (nonatomic, strong) JGProgressHUD *hud;
 %property(nonatomic, assign) BOOL elementsHidden;
@@ -860,8 +858,6 @@
     }
 }
 %end
-
-@interface AWEAwemeDetailTableViewCell (HDVideoDownload);
 
 %hook AWEAwemeDetailTableViewCell
 %property (nonatomic, strong) JGProgressHUD *hud;
