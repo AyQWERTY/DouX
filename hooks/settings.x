@@ -14,20 +14,25 @@
 %end
 
 %hook AWESettingsNormalSectionViewModel
-- (void)viewDidLoad {
-    %orig;
-    if ([self.sectionIdentifier isEqualToString:@"account"]) {
-        TTKSettingsBaseCellPlugin *DouXSettingsPluginCell = [[%c(TTKSettingsBaseCellPlugin) alloc] initWithPluginContext:self.context];
-
-        AWESettingItemModel *DouXSettingsItemModel = [[%c(AWESettingItemModel) alloc] initWithIdentifier:@"doux_settings"];
-        [DouXSettingsItemModel setTitle:@"DouX settings"];
-        [DouXSettingsItemModel setDetail:@"DouX settings"];
-        [DouXSettingsItemModel setIconImage:[UIImage systemImageNamed:@"gear"]];
-        [DouXSettingsItemModel setType:99];
-
-        [DouXSettingsPluginCell setItemModel:DouXSettingsItemModel];
-
-        [self insertModel:DouXSettingsPluginCell atIndex:0 animated:true];
+- (NSArray *)modelsArray {
+    NSArray *original = %orig;
+    if (![self.sectionIdentifier isEqualToString:@"account"]) {
+        return original;
     }
+    for (id model in original) {
+        if ([model.itemModel.identifier isEqualToString:@"doux_settings"]) {
+            return original;
+        }
+    }
+    NSMutableArray *mutable = [original mutableCopy];
+    TTKSettingsBaseCellPlugin *DouXSettingsPluginCell = [[%c(TTKSettingsBaseCellPlugin) alloc] initWithPluginContext:self.context];
+    AWESettingItemModel *DouXSettingsItemModel = [[%c(AWESettingItemModel) alloc] initWithIdentifier:@"doux_settings"];
+    [DouXSettingsItemModel setTitle:@"DouX settings"];
+    [DouXSettingsItemModel setDetail:@"DouX settings"];
+    [DouXSettingsItemModel setIconImage:[UIImage systemImageNamed:@"gear"]];
+    [DouXSettingsItemModel setType:99];
+    [DouXSettingsPluginCell setItemModel:DouXSettingsItemModel];
+    [mutable insertObject:DouXSettingsPluginCell atIndex:0];
+    return [mutable copy];
 }
 %end
