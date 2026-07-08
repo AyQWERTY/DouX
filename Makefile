@@ -13,9 +13,6 @@ DouX_CFLAGS = -fobjc-arc -Wno-unused-variable -Wno-unused-value -Wno-deprecated-
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
-# --- Add this line at the end ---
+# Embed JGProgressHUD via aggregate
+SUBPROJECTS = libs/JGProgressHUD
 include $(THEOS_MAKE_PATH)/aggregate.mk
-
-before-all::
-	@$(MAKE) -C libs/JGProgressHUD THEOS_PACKAGE_SCHEME=$(THEOS_PACKAGE_SCHEME)
-	@$(MAKE) -C libs/JGProgressHUD stage THEOS_PACKAGE_SCHEME=$(THEOS_PACKAGE_SCHEME)
