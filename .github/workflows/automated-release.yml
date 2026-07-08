@@ -38,7 +38,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.2'
+          xcode-version: latest-stable
           
       - name: Accept Xcode License
         run: sudo xcodebuild -license accept
@@ -205,12 +205,10 @@ jobs:
           
           # Fallback to git log if release notes are empty or null
           if [ -z "$CHANGELOG" ] || [ "$CHANGELOG" == "null" ]; then
-            echo "No release notes found via API. Falling back to git log."
-            PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            echo "No release notes found via API. Generating changelog from git log."
+            PREV_TAG=$(git describe --tags --abbrev-0 HEAD^ 2>/dev/null || echo "")
             if [[ -n "$PREV_TAG" ]]; then
-              CHANGELOG="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREV_TAG...$VERSION"
-              CHANGELOG+=
-
+              CHANGELOG="### Changes in this release\n\n$(git log $PREV_TAG..HEAD --oneline --no-merges)"
             fi
           fi
           echo "$CHANGELOG" > release_notes.md
@@ -234,103 +232,3 @@ jobs:
           for file in ${{ steps.prepare_assets.outputs.FILES }}; do
             echo "- 	$file" >> $GITHUB_STEP_SUMMARY
           done
-
-  # Job to update the external APT repository after the release is created
-  update-apt-repo:
-    needs: release
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout External APT Repo (gh-pages)
-        uses: actions/checkout@v4
-        with:
-          repository: 'kunihir0/WattMaster'
-          ref: 'gh-pages'
-          path: 'apt-repo'
-          token: ${{ secrets.GH_PAT }}
-
-      # Step 2: Get the URLs and correct filenames of the .deb files from the release.
-      - name: Get Release Info
-        id: release_info
-        run: |
-          TAG_NAME=${GITHUB_REF#refs/tags/}
-          echo "Fetching release info for tag: $TAG_NAME"
-          
-          RELEASE_DATA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$TAG_NAME")
-            
-          # Get a JSON array of objects, each containing the correct name and the download URL
-          DEB_INFO=$(echo "$RELEASE_DATA" | jq -c '[.assets[] | select(.name | endswith(".deb")) | {name: .name, url: .browser_download_url}]')
-          
-          if [ -z "$DEB_INFO" ] || [ "$DEB_INFO" == "[]" ]; then
-            echo "No .deb files found in the release assets for this tweak."
-            exit 1
-          fi
-
-          # Pass the JSON array to the next step
-          echo "deb_info=$DEB_INFO" >> $GITHUB_OUTPUT
-
-      # Step 3: Download the .deb files using their correct names into the cloned external repo.
-      - name: Download new .deb files into APT repo
-        run: |
-          echo "Downloading new .deb files..."
-          mkdir -p apt-repo/debs
-          
-          # Parse the JSON array and loop through each object
-          echo '${{ steps.release_info.outputs.deb_info }}' | jq -c '.[]' | while read -r deb;
-            do
-            # Extract the name and url from the JSON object
-            NAME=$(echo "$deb" | jq -r '.name')
-            URL=$(echo "$deb" | jq -r '.url')
-            
-            if [ -n "$URL" ]; then
-              echo "Downloading $NAME"
-              # Use the correct NAME for the output file
-              curl -L "$URL" -o "apt-repo/debs/$NAME"
-            fi
-          done
-          
-          echo "New packages added to apt-repo/debs:"
-          ls -l apt-repo/debs
-
-      - name: Update APT Repository Index Files
-        uses: docker://debian:stable-slim
-        with:
-          entrypoint: /bin/bash
-          args: >
-            -c "set -e && 
-            apt-get update && 
-            apt-get install -y dpkg-dev bzip2 apt-utils && 
-            cd /github/workspace/apt-repo && 
-            echo 'Scanning all packages...' &&
-            dpkg-scanpackages --multiversion . > Packages && 
-            bzip2 -k -f Packages && 
-            echo 'Generating Release file...' &&
-            apt-ftparchive release . > Release"
-
-      - name: Commit and Push to External Repo
-        run: |
-          cd apt-repo
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "github-actions@github.com"
-          
-          if [ -z "$(git status --porcelain)" ]; then
-            echo "No changes to the repository. Nothing to commit."
-          else
-            git add .
-            TAG_NAME=${GITHUB_REF#refs/tags/}
-            git commit -m "feat: Add ${{ github.repository }}@$TAG_NAME to APT repo"
-            
-            echo "Pushing changes to kunihir0/WattMaster gh-pages branch..."
-            git push
-            
-            echo "Successfully updated the external APT repository."
-          fi
-
-      - name: APT Update Summary
-        run: |
-          echo "## 📦 External APT Repository Updated" >> $GITHUB_STEP_SUMMARY
-          echo "The 	gh-pages	 branch of **kunihir0/WattMaster** has been updated with the latest packages from this release." >> $GITHUB_STEP_SUMMARY
