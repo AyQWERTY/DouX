@@ -18,7 +18,7 @@ jobs:
         id: cache-theos
         uses: actions/cache@v4
         with:
-          path: /opt/theos
+          path: ~/theos
           key: ${{ runner.os }}-theos-sdk-v1
 
       - name: Setup Xcode
@@ -32,18 +32,17 @@ jobs:
       - name: Install Theos (Roothide)
         if: steps.cache-theos.outputs.cache-hit != 'true'
         run: |
-          sudo mkdir -p /opt/theos
-          sudo chown -R $(whoami) /opt/theos
-          export THEOS=/opt/theos
-          echo "THEOS=/opt/theos" >> $GITHUB_ENV
-          git clone --recursive https://github.com/roothide/theos.git /opt/theos
+          mkdir -p ~/theos
+          export THEOS=~/theos
+          echo "THEOS=~/theos" >> $GITHUB_ENV
+          git clone --recursive https://github.com/roothide/theos.git ~/theos
           brew install ldid xz
 
       - name: Install iOS SDK
         if: steps.cache-theos.outputs.cache-hit != 'true'
         run: |
-          mkdir -p /opt/theos/sdks
-          cd /opt/theos/sdks
+          mkdir -p ~/theos/sdks
+          cd ~/theos/sdks
           for i in {1..3}; do
             curl -L -o iPhoneOS16.5.sdk.tar.xz https://github.com/theos/sdks/releases/download/master-146e41f/iPhoneOS16.5.sdk.tar.xz && break
             echo "SDK download failed. Retrying in 5 seconds..."
@@ -54,7 +53,7 @@ jobs:
 
       - name: Build (rootless debug)
         run: |
-          export THEOS=/opt/theos
+          export THEOS=~/theos
           mkdir -p build-artifacts
 
           ORIG_CONTROL=$(cat control)
