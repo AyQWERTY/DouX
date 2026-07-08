@@ -84,11 +84,7 @@
 - (NSURL *)bestImageURLtoDownload;
 @end
 
-%interface AWEVideoModel : NSObject
-@property(readwrite, nonatomic) AWEURLModel *playURL;
-@property(readonly, nonatomic) AWEURLModel *downloadURL;
-@property(readonly, nonatomic) NSNumber *duration;
-@end
+@class AWEVideoModel;
 
 @interface AWEMusicModel : NSObject
 @property(readonly, nonatomic) AWEURLModel *playURL;
