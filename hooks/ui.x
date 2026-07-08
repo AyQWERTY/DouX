@@ -331,6 +331,8 @@
         ]];
     }
 }
+%new - (void)_fetchAndDownloadHDVideo:(id)userInfo;
+%new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC;
 %new - (void)_fetchAndDownloadHDVideo:(id)userInfo {
     NSURL *downloadableURL = [userInfo objectForKey:@"url"];
     NSString *ext = [userInfo objectForKey:@"ext"];
@@ -909,6 +911,8 @@
         ]];
     }
 }
+%new - (void)_fetchAndDownloadHDVideo:(id)userInfo;
+%new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC;
 %new - (void)_fetchAndDownloadHDVideo:(id)userInfo {
     NSURL *downloadableURL = [userInfo objectForKey:@"url"];
     NSString *ext = [userInfo objectForKey:@"ext"];
