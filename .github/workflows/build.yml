@@ -29,6 +29,9 @@ jobs:
       - name: Accept Xcode License
         run: sudo xcodebuild -license accept
 
+      - name: Install ldid
+        run: brew install ldid xz
+
       - name: Install Theos (Roothide)
         if: steps.cache-theos.outputs.cache-hit != 'true'
         run: |
@@ -36,7 +39,6 @@ jobs:
           export THEOS=~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
           git clone --recursive https://github.com/roothide/theos.git ~/theos
-          brew install ldid xz
 
       - name: Install iOS SDK
         if: steps.cache-theos.outputs.cache-hit != 'true'
