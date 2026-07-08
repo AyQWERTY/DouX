@@ -63,12 +63,6 @@
 }
 %end
 
-%interface AWEVideoModel : NSObject
-@property(readwrite, nonatomic) AWEURLModel *playURL;
-@property(readonly, nonatomic) AWEURLModel *downloadURL;
-@property(readonly, nonatomic) NSNumber *duration;
-%end
-
 %hook AWEVideoModel
 - (AWEURLModel *)playURL {
     if ([DouXManager forceVideoQuality]) {
