@@ -201,14 +201,16 @@ jobs:
           RELEASE_DATA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/releases/tags/$VERSION")
           
-          CHANGELOG=$(echo "$RELEASE_DATA" | jq -r .body)
+          CHANGELOG=$(echo "$RELEASE_DATA" | jq -r '.body // empty')
           
           # Fallback to git log if release notes are empty or null
           if [ -z "$CHANGELOG" ] || [ "$CHANGELOG" == "null" ]; then
-            echo "No release notes found via API. Generating changelog from git log."
-            PREV_TAG=$(git describe --tags --abbrev-0 HEAD^ 2>/dev/null || echo "")
+            echo "No release notes found via API. Falling back to git log."
+            PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
             if [[ -n "$PREV_TAG" ]]; then
-              CHANGELOG="### Changes in this release\n\n$(git log $PREV_TAG..HEAD --oneline --no-merges)"
+              CHANGELOG="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREV_TAG...$VERSION"
+              CHANGELOG+="\n\n"
+              CHANGELOG+="$(git log $PREV_TAG..HEAD --oneline --no-merges)"
             fi
           fi
           echo "$CHANGELOG" > release_notes.md
