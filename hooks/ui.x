@@ -129,10 +129,10 @@
     if ([DouXManager removeWatermark]){
         %orig(1);
     }
-    else { 
+    else {
         %orig;
     }
-    
+
 }
 - (NSUInteger)watermarkType {
     if ([DouXManager removeWatermark]){
@@ -142,7 +142,7 @@
 }
 %end
 
-%hook UIButton // follow confirmation broken 
+%hook UIButton // follow confirmation broken
 - (void)_onTouchUpInside {
     if ([DouXManager followConfirmation] && [self.currentTitle isEqualToString:@"Follow"]) {
         showConfirmation(^(void) { %orig; });
@@ -214,20 +214,20 @@
 %new - (NSString *)emojiForCountryCode:(NSString *)countryCode {
     // Convert the country code to uppercase
     NSString *uppercaseCountryCode = [countryCode uppercaseString];
-    
+
     // Ensure the country code has exactly two characters
     if (uppercaseCountryCode.length != 2) {
         return nil;
     }
-    
+
     // Convert the country code to the regional indicator symbols
     uint32_t firstLetter = [uppercaseCountryCode characterAtIndex:0] + 0x1F1E6 - 'A';
     uint32_t secondLetter = [uppercaseCountryCode characterAtIndex:1] + 0x1F1E6 - 'A';
-    
+
     // Create the emoji using the regional indicator symbols
     NSString *flagEmoji = [[NSString alloc] initWithBytes:&firstLetter length:4 encoding:NSUTF32LittleEndianStringEncoding];
     flagEmoji = [flagEmoji stringByAppendingString:[[NSString alloc] initWithBytes:&secondLetter length:4 encoding:NSUTF32LittleEndianStringEncoding]];
-    
+
     return flagEmoji;
 }
 
@@ -238,7 +238,7 @@
             id j = [[self subviews] objectAtIndex:i];
             if ([j isKindOfClass:%c(UIStackView)]){
                 CGRect frame = [j frame];
-                frame.origin.x = 39.5; 
+                frame.origin.x = 39.5;
                 [j setFrame:frame];
             }else {
                 [[self viewWithTag:666] removeFromSuperview];
@@ -266,7 +266,7 @@
     } else if ([DouXManager liveActionEnabled] && [[DouXManager selectedLiveAction] intValue] == 1) {
         UINavigationController *DouXSettings = [[UINavigationController alloc] initWithRootViewController:[[ViewController alloc] init]];
         [topMostController() presentViewController:DouXSettings animated:true completion:nil];
-    } 
+    }
     else {
         %orig;
     }
@@ -331,22 +331,95 @@
         ]];
     }
 }
-%new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC {
-    NSString *as = rootVC.model.itemID;
-    NSURL *downloadableURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://tikwm.com/video/media/hdplay/%@.mp4", as]];
-    self.fileextension = [rootVC.model.video.playURL bestURLtoDownloadFormat];
-    if (downloadableURL) {
-        UISelectionFeedbackGenerator *feedbackGenerator = [[UISelectionFeedbackGenerator alloc] init];
-        [feedbackGenerator prepare];
-        objc_setAssociatedObject(self, kFeedbackGeneratorKey, feedbackGenerator, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+%new - (void)_fetchAndDownloadHDVideo:(id)userInfo {
+    NSURL *downloadableURL = [userInfo objectForKey:@"url"];
+    NSString *ext = [userInfo objectForKey:@"ext"];
+    NSString *errorDescription = [userInfo objectForKey:@"errorDescription"];
+    NSString *httpStatus = [userInfo objectForKey:@"httpStatus"];
 
-        DouXDownload *dwManager = [[DouXDownload alloc] init];
-        [dwManager downloadFileWithURL:downloadableURL];
-        [dwManager setDelegate:self];
-        self.hud = [JGProgressHUD progressHUDWithStyle:JGProgressHUDStyleDark];
-        self.hud.textLabel.text = @"Downloading";
-        [self.hud showInView:topMostController().view];
+    if (errorDescription) {
+        if (self.hud) {
+            [self.hud dismiss];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSString *fullMessage = errorDescription;
+            if (httpStatus) {
+                fullMessage = [NSString stringWithFormat:@"%@\n(HTTP %@)", errorDescription, httpStatus];
+            }
+            [%c(AWEUIAlertView) showAlertWithTitle:@"DouX, Hi" description:fullMessage image:nil actionButtonTitle:@"OK" cancelButtonTitle:nil actionBlock:nil cancelBlock:nil];
+        });
+        return;
     }
+
+    self.fileextension = ext;
+    UISelectionFeedbackGenerator *feedbackGenerator = [[UISelectionFeedbackGenerator alloc] init];
+    [feedbackGenerator prepare];
+    objc_setAssociatedObject(self, kFeedbackGeneratorKey, feedbackGenerator, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+    DouXDownload *dwManager = [[DouXDownload alloc] init];
+    [dwManager downloadFileWithURL:downloadableURL];
+    [dwManager setDelegate:self];
+    self.hud = [JGProgressHUD progressHUDWithStyle:JGProgressHUDStyleDark];
+    self.hud.textLabel.text = @"Downloading";
+    [self.hud showInView:topMostController().view];
+}
+
+%new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC {
+    NSString *itemId = rootVC.model.itemID;
+    id author = rootVC.model.author;
+    NSString *uniqueId = [author valueForKey:@"unique_id"];
+
+    if (!uniqueId || !itemId) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [%c(AWEUIAlertView) showAlertWithTitle:@"DouX, Hi" description:@"Could not retrieve video information" image:nil actionButtonTitle:@"OK" cancelButtonTitle:nil actionBlock:nil cancelBlock:nil];
+        });
+        return;
+    }
+
+    NSString *tiktokUrl = [NSString stringWithFormat:@"https://www.tiktok.com/%@/video/%@", uniqueId, itemId];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:nil];
+    NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:[apiUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]
+                                              completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (data && !error) {
+            NSError *jsonError = nil;
+            NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+            NSDictionary *d = json[@"data"];
+
+            if (d && [json[@"code"] integerValue] == 0) {
+                NSString *hdplayUrl = d[@"hdplay"];
+                if (hdplayUrl) {
+                    NSDictionary *info = @{@"url": [NSURL URLWithString:hdplayUrl], @"ext": @"mp4"};
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self _fetchAndDownloadHDVideo:info];
+                    });
+                    return;
+                }
+            }
+        }
+
+        NSString *httpCode = @"";
+        NSString *msg = @"HD video not available";
+        if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+            NSHTTPURLResponse *httpResp = (NSHTTPURLResponse *)response;
+            httpCode = [NSString stringWithFormat:@"%ld", (long)httpResp.statusCode];
+            if (httpResp.statusCode == 429) {
+                msg = @"Rate limit exceeded. Please try again later.";
+            } else if (httpResp.statusCode == 400) {
+                msg = @"Invalid request. The video may be private or unsupported.";
+            } else if (httpResp.statusCode == 403) {
+                msg = @"Access denied. The API may be restricted.";
+            } else if (httpResp.statusCode == 500) {
+                msg = @"API server error. Please try again later.";
+            }
+        } else if (error) {
+            msg = [NSString stringWithFormat:@"Network error: %@", error.localizedDescription];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSDictionary *info = @{@"errorDescription": msg, @"httpStatus": httpCode};
+            [self _fetchAndDownloadHDVideo:info];
+        });
+    }];
+    [task resume];
 }
 %new - (void)downloadVideo:(AWEAwemeBaseViewController *)rootVC {
     NSString *as = rootVC.model.itemID;
@@ -385,7 +458,7 @@
                 } else {
                     os_log_error(doux_log, "Failed to get image URL for single download. URL is nil.");
                 }
-            
+
     }
 
 %new - (void)downloadPhotos:(TTKPhotoAlbumDetailCellController *)rootVC {
@@ -835,22 +908,95 @@
         ]];
     }
 }
-%new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC {
-    NSString *as = rootVC.model.itemID;
-    NSURL *downloadableURL = [NSURL URLWithString:[NSString stringWithFormat:@"https://tikwm.com/video/media/hdplay/%@.mp4", as]];
-    self.fileextension = [rootVC.model.video.playURL bestURLtoDownloadFormat];
-    if (downloadableURL) {
-        UISelectionFeedbackGenerator *feedbackGenerator = [[UISelectionFeedbackGenerator alloc] init];
-        [feedbackGenerator prepare];
-        objc_setAssociatedObject(self, kFeedbackGeneratorKey, feedbackGenerator, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+%new - (void)_fetchAndDownloadHDVideo:(id)userInfo {
+    NSURL *downloadableURL = [userInfo objectForKey:@"url"];
+    NSString *ext = [userInfo objectForKey:@"ext"];
+    NSString *errorDescription = [userInfo objectForKey:@"errorDescription"];
+    NSString *httpStatus = [userInfo objectForKey:@"httpStatus"];
 
-        DouXDownload *dwManager = [[DouXDownload alloc] init];
-        [dwManager downloadFileWithURL:downloadableURL];
-        [dwManager setDelegate:self];
-        self.hud = [JGProgressHUD progressHUDWithStyle:JGProgressHUDStyleDark];
-        self.hud.textLabel.text = @"Downloading";
-        [self.hud showInView:topMostController().view];
+    if (errorDescription) {
+        if (self.hud) {
+            [self.hud dismiss];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSString *fullMessage = errorDescription;
+            if (httpStatus) {
+                fullMessage = [NSString stringWithFormat:@"%@\n(HTTP %@)", errorDescription, httpStatus];
+            }
+            [%c(AWEUIAlertView) showAlertWithTitle:@"DouX, Hi" description:fullMessage image:nil actionButtonTitle:@"OK" cancelButtonTitle:nil actionBlock:nil cancelBlock:nil];
+        });
+        return;
     }
+
+    self.fileextension = ext;
+    UISelectionFeedbackGenerator *feedbackGenerator = [[UISelectionFeedbackGenerator alloc] init];
+    [feedbackGenerator prepare];
+    objc_setAssociatedObject(self, kFeedbackGeneratorKey, feedbackGenerator, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+
+    DouXDownload *dwManager = [[DouXDownload alloc] init];
+    [dwManager downloadFileWithURL:downloadableURL];
+    [dwManager setDelegate:self];
+    self.hud = [JGProgressHUD progressHUDWithStyle:JGProgressHUDStyleDark];
+    self.hud.textLabel.text = @"Downloading";
+    [self.hud showInView:topMostController().view];
+}
+
+%new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC {
+    NSString *itemId = rootVC.model.itemID;
+    id author = rootVC.model.author;
+    NSString *uniqueId = [author valueForKey:@"unique_id"];
+
+    if (!uniqueId || !itemId) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [%c(AWEUIAlertView) showAlertWithTitle:@"DouX, Hi" description:@"Could not retrieve video information" image:nil actionButtonTitle:@"OK" cancelButtonTitle:nil actionBlock:nil cancelBlock:nil];
+        });
+        return;
+    }
+
+    NSString *tiktokUrl = [NSString stringWithFormat:@"https://www.tiktok.com/%@/video/%@", uniqueId, itemId];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:nil];
+    NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:[apiUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]
+                                              completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        if (data && !error) {
+            NSError *jsonError = nil;
+            NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+            NSDictionary *d = json[@"data"];
+
+            if (d && [json[@"code"] integerValue] == 0) {
+                NSString *hdplayUrl = d[@"hdplay"];
+                if (hdplayUrl) {
+                    NSDictionary *info = @{@"url": [NSURL URLWithString:hdplayUrl], @"ext": @"mp4"};
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self _fetchAndDownloadHDVideo:info];
+                    });
+                    return;
+                }
+            }
+        }
+
+        NSString *httpCode = @"";
+        NSString *msg = @"HD video not available";
+        if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+            NSHTTPURLResponse *httpResp = (NSHTTPURLResponse *)response;
+            httpCode = [NSString stringWithFormat:@"%ld", (long)httpResp.statusCode];
+            if (httpResp.statusCode == 429) {
+                msg = @"Rate limit exceeded. Please try again later.";
+            } else if (httpResp.statusCode == 400) {
+                msg = @"Invalid request. The video may be private or unsupported.";
+            } else if (httpResp.statusCode == 403) {
+                msg = @"Access denied. The API may be restricted.";
+            } else if (httpResp.statusCode == 500) {
+                msg = @"API server error. Please try again later.";
+            }
+        } else if (error) {
+            msg = [NSString stringWithFormat:@"Network error: %@", error.localizedDescription];
+        }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSDictionary *info = @{@"errorDescription": msg, @"httpStatus": httpCode};
+            [self _fetchAndDownloadHDVideo:info];
+        });
+    }];
+    [task resume];
 }
 %new - (void)downloadVideo:(AWEAwemeBaseViewController *)rootVC {
     NSString *as = rootVC.model.itemID;
