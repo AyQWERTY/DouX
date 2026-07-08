@@ -275,13 +275,13 @@
 %end
 
 
+@interface AWEFeedViewTemplateCell (_FetchAndDownloadHDVideo:);
+
 %hook AWEFeedViewTemplateCell
 %property (nonatomic, strong) JGProgressHUD *hud;
 %property(nonatomic, assign) BOOL elementsHidden;
 %property (nonatomic, retain) NSString *fileextension;
 %property (nonatomic, retain) UIProgressView *progressView;
-%interface AWEFeedViewTemplateCell (_FetchAndDownloadHDVideo:);
-@end
 
 - (void)configWithModel:(id)model {
     %orig;
@@ -861,13 +861,13 @@
 }
 %end
 
+@interface AWEAwemeDetailTableViewCell (_FetchAndDownloadHDVideo:);
+
 %hook AWEAwemeDetailTableViewCell
 %property (nonatomic, strong) JGProgressHUD *hud;
 %property(nonatomic, assign) BOOL elementsHidden;
 %property (nonatomic, retain) UIProgressView *progressView;
 %property (nonatomic, retain) NSString *fileextension;
-%interface AWEAwemeDetailTableViewCell (_FetchAndDownloadHDVideo:);
-@end
 
 - (void)configWithModel:(id)model {
     %orig;
