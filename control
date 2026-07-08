@@ -1,6 +1,6 @@
 Package: com.kunihir0.doux
 Name: DouX
-Version: 2.0.2
+Version: 2.0.3
 Architecture: iphoneos-arm64
 Description: A collection of enhancements for TikTok.
 Maintainer: kunihir0
