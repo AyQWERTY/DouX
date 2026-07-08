@@ -72,10 +72,10 @@
             NSString *p = playMod.originURLList[i];
             NSString *d = dlMod.originURLList[i];
             if (![p isEqualToString:d]) {
-                os_log_info(doux_log, "play #%ld: %@", (long)i, p);
-                os_log_info(doux_log, "dl   #%ld: %@", (long)i, d);
+                os_log_info(doux_log, "play #%ld: %{public}@", (long)i, p);
+                os_log_info(doux_log, "dl   #%ld: %{public}@", (long)i, d);
             } else {
-                os_log_info(doux_log, "play #%ld (same): %@", (long)i, p);
+                os_log_info(doux_log, "play #%ld (same): %{public}@", (long)i, p);
             }
         }
     }
