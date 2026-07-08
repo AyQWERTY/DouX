@@ -377,6 +377,7 @@
     }
 
     NSString *tiktokUrl = [NSString stringWithFormat:@"https://www.tiktok.com/%@/video/%@", uniqueId, itemId];
+    NSString *apiUrl = [NSString stringWithFormat:@"https://tikwm.com/api/?url=%@&hd=1", tiktokUrl];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:nil];
     NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:[apiUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]
                                               completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
@@ -954,6 +955,7 @@
     }
 
     NSString *tiktokUrl = [NSString stringWithFormat:@"https://www.tiktok.com/%@/video/%@", uniqueId, itemId];
+    NSString *apiUrl = [NSString stringWithFormat:@"https://tikwm.com/api/?url=%@&hd=1", tiktokUrl];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:nil];
     NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:[apiUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]
                                               completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
