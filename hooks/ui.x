@@ -280,6 +280,8 @@
 %property(nonatomic, assign) BOOL elementsHidden;
 %property (nonatomic, retain) NSString *fileextension;
 %property (nonatomic, retain) UIProgressView *progressView;
+%interface AWEFeedViewTemplateCell (_FetchAndDownloadHDVideo:);
+@end
 
 - (void)configWithModel:(id)model {
     %orig;
@@ -331,8 +333,6 @@
         ]];
     }
 }
-%new - (void)_fetchAndDownloadHDVideo:(id)userInfo;
-%new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC;
 %new - (void)_fetchAndDownloadHDVideo:(id)userInfo {
     NSURL *downloadableURL = [userInfo objectForKey:@"url"];
     NSString *ext = [userInfo objectForKey:@"ext"];
@@ -866,6 +866,8 @@
 %property(nonatomic, assign) BOOL elementsHidden;
 %property (nonatomic, retain) UIProgressView *progressView;
 %property (nonatomic, retain) NSString *fileextension;
+%interface AWEAwemeDetailTableViewCell (_FetchAndDownloadHDVideo:);
+@end
 
 - (void)configWithModel:(id)model {
     %orig;
@@ -911,8 +913,6 @@
         ]];
     }
 }
-%new - (void)_fetchAndDownloadHDVideo:(id)userInfo;
-%new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC;
 %new - (void)_fetchAndDownloadHDVideo:(id)userInfo {
     NSURL *downloadableURL = [userInfo objectForKey:@"url"];
     NSString *ext = [userInfo objectForKey:@"ext"];
