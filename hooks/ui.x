@@ -370,18 +370,14 @@
 
 %new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC {
     NSString *itemId = rootVC.model.itemID;
-    id author = rootVC.model.author;
-    NSString *uniqueId = [author valueForKey:@"unique_id"];
-
-    if (!uniqueId || !itemId) {
+    if (!itemId) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [%c(AWEUIAlertView) showAlertWithTitle:@"DouX, Hi" description:@"Could not retrieve video information" image:nil actionButtonTitle:@"OK" cancelButtonTitle:nil actionBlock:nil cancelBlock:nil];
+            [%c(AWEUIAlertView) showAlertWithTitle:@"DouX, Hi" description:@"Could not retrieve video ID" image:nil actionButtonTitle:@"OK" cancelButtonTitle:nil actionBlock:nil cancelBlock:nil];
         });
         return;
     }
 
-    NSString *tiktokUrl = [NSString stringWithFormat:@"https://www.tiktok.com/%@/video/%@", uniqueId, itemId];
-    NSString *apiUrl = [NSString stringWithFormat:@"https://tikwm.com/api/?url=%@&hd=1", tiktokUrl];
+    NSString *apiUrl = [NSString stringWithFormat:@"https://tikwm.com/api/?url=%@&hd=1", itemId];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:nil];
     NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:[apiUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]
                                               completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
@@ -952,18 +948,14 @@
 
 %new - (void)downloadHDVideo:(AWEAwemeBaseViewController *)rootVC {
     NSString *itemId = rootVC.model.itemID;
-    id author = rootVC.model.author;
-    NSString *uniqueId = [author valueForKey:@"unique_id"];
-
-    if (!uniqueId || !itemId) {
+    if (!itemId) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [%c(AWEUIAlertView) showAlertWithTitle:@"DouX, Hi" description:@"Could not retrieve video information" image:nil actionButtonTitle:@"OK" cancelButtonTitle:nil actionBlock:nil cancelBlock:nil];
+            [%c(AWEUIAlertView) showAlertWithTitle:@"DouX, Hi" description:@"Could not retrieve video ID" image:nil actionButtonTitle:@"OK" cancelButtonTitle:nil actionBlock:nil cancelBlock:nil];
         });
         return;
     }
 
-    NSString *tiktokUrl = [NSString stringWithFormat:@"https://www.tiktok.com/%@/video/%@", uniqueId, itemId];
-    NSString *apiUrl = [NSString stringWithFormat:@"https://tikwm.com/api/?url=%@&hd=1", tiktokUrl];
+    NSString *apiUrl = [NSString stringWithFormat:@"https://tikwm.com/api/?url=%@&hd=1", itemId];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:nil];
     NSURLSessionTask *task = [session dataTaskWithURL:[NSURL URLWithString:[apiUrl stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]]
                                               completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
