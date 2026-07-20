@@ -65,8 +65,12 @@
 
 %hook AWEVideoModel
 - (AWEURLModel *)playURL {
+    AWEURLModel *dl = self.downloadURL;
     if ([DouXManager forceVideoQuality]) {
-        return self.downloadURL;
+        if (!dl) {
+            return %orig;
+        }
+        return dl;
     }
     return %orig;
 }
