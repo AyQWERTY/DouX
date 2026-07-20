@@ -65,12 +65,16 @@
 
 %hook AWEVideoModel
 - (AWEURLModel *)playURL {
-    AWEURLModel *dl = self.downloadURL;
     if ([DouXManager forceVideoQuality]) {
-        if (!dl) {
-            return %orig;
+        id orig = %orig;
+        if ([[orig bestURLtoDownloadFormat] isEqualToString:@"mp3"]) {
+            return orig;
         }
-        return dl;
+        AWEURLModel *dl = self.downloadURL;
+        if (dl) {
+            return dl;
+        }
+        return orig;
     }
     return %orig;
 }
